@@ -54,13 +54,14 @@ class ProtobufEasyDecode:
         temp_proto = {}
         while alls_good:
             current_tag_header,pos=self.decode_varint(message,pos)
-            current_tag_id, current_tag_type=self.decode_tag_header(current_tag_header)
+            current_tag_id,current_tag_type = \
+                           self.decode_tag_header(current_tag_header)
             if current_tag_type == self.WIRETYPE_LENGTHDELIM:
                 data,pos = self.decode_lengthdelim(message,pos)
             elif current_tag_type == self.WIRETYPE_VARINT:
                 data,pos = self.decode_varint(message,pos)
             else:
-                data = "error"
+                data = "ERR"
                 pos = len(message)
                 alls_good = False
             temp_proto[current_tag_id] = (current_tag_type,data)
@@ -79,13 +80,15 @@ class ProtobufEasyDecode:
             return
         if not (tag_id in self.decoded_message):
             return
-        if self.decoded_message[tag_id][0] == 2:
-            self.decoded_message[tag_id] = (2,self.decode_raw_message(self.decoded_message[tag_id][1]))
+        if self.decoded_message[tag_id][0] == self.WIRETYPE_LENGTHDELIM:
+            self.decoded_message[tag_id] = \
+                 (self.WIRETYPE_LENGTHDELIM,
+                  self.decode_raw_message(self.decoded_message[tag_id][1]))
         else:
             return 
 x = ProtobufEasyDecode(binascii.unhexlify(sys.argv[1]))
 x.get_decoded_raw_message()
-x.decode_tag(1)
-x.decode_tag(11)
-x.decode_tag(18)
+x.decode_tag(3)
+x.decode_tag(5)
+x.decode_tag(10)
 print x.get_decoded_raw_message()
