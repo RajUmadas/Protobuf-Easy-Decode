@@ -44,37 +44,27 @@ def getTypeName(i):
     else:
         return "WTF"
 
-def genDecodeProtoBuff(protoBin, indentLevel = 0):
+def genDecodeProtoBuff(protoBin):
     allsGood = True
+    theProtos =  {}
     while allsGood:
         if len(protoBin) == 0:
-            return 1
+            return theProtos
         currentTagInt,pos = getVarintPos(protoBin)
         protoBin = protoBin[pos:]
         currentTag,currentType = getTagType(currentTagInt)
         if currentType == TYPE_LENGTHDELIM:
             data,pos = getLengthdelimPos(protoBin)
             protoBin = protoBin[pos:]
-            print "    " * indentLevel + "Current Tag: " + str(currentTag)
-            print "    " * indentLevel + "Current Type: " + getTypeName(currentType)
-            print "    " * indentLevel + "Current Data: " + data
-            print "    " * indentLevel + "Current Data Hex: " + binascii.hexlify(data)
-            print "    " * indentLevel + "*******Digging In**********"
-            genDecodeProtoBuff(data, indentLevel + 1)
-            print "    " * indentLevel + "***************************"
+            
+            theProtos[currentTag]=(currentType,data,genDecodeProtoBuff(data))
         elif currentType == TYPE_VARINT:
             data,pos = getVarintPos(protoBin)
             protoBin = protoBin[pos:]
-            print "    " * indentLevel + "Current Tag: " + str(currentTag)
-            print "    " * indentLevel + "Current Type: " + getTypeName(currentType)
-            print "    " * indentLevel + "Current Data: " + str(data)
+            theProtos[currentTag]=(currentType,data,0)
         else:
-            print "    " * indentLevel + "OMFG:" + str(currentType) + " " + getTypeName(currentType)
             allsGood = False
+    return theProtos
 
-
-protoBin = binascii.unhexlify(sys.argv[1])
-
-
-    
-genDecodeProtoBuff(protoBin) 
+protoBin = binascii.unhexlify(sys.argv[1])    
+print genDecodeProtoBuff(protoBin) 
