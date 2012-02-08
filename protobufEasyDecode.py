@@ -77,6 +77,8 @@ class ProtobufEasyDecode:
     def decode_tag(self, tag_id):
         if self.decoded_message == {}:
             return
+        if not (tag_id in self.decoded_message):
+            return
         if self.decoded_message[tag_id][0] == 2:
             self.decoded_message[tag_id] = (2,self.decode_raw_message(self.decoded_message[tag_id][1]))
         else:
@@ -84,4 +86,6 @@ class ProtobufEasyDecode:
 x = ProtobufEasyDecode(binascii.unhexlify(sys.argv[1]))
 x.get_decoded_raw_message()
 x.decode_tag(1)
+x.decode_tag(11)
+x.decode_tag(18)
 print x.get_decoded_raw_message()
