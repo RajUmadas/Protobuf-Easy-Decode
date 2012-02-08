@@ -53,12 +53,13 @@ def genDecodeProtoBuff(protoBin):
         if currentType == TYPE_LENGTHDELIM:
             data,pos = getLengthdelimPos(protoBin)
             protoBin = protoBin[pos:]
-            theProtos[currentTag]=(currentType,data,genDecodeProtoBuff(data))
+            theProtos[currentTag]=(currentType,data)
         elif currentType == TYPE_VARINT:
             data,pos = getVarintPos(protoBin)
             protoBin = protoBin[pos:]
-            theProtos[currentTag]=(currentType,data,0)
+            theProtos[currentTag]=(currentType,data)
         else:
+            print "ERR: Wtf is this shit?!?"
             allsGood = False
         if len(protoBin) == 0:
             allsGood = False
