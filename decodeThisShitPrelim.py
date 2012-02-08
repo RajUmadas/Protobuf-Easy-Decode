@@ -70,5 +70,6 @@ protoObj = genDecodeProtoBuff(protoBin)
 
 for i in protoObj:
     print "Tag: %i" % i
-    print "Object :" 
-    print  protoObj[i]
+    print "Type: %s" % getTypeName(protoObj[i][0])
+    print protoObj[i][1]
+    print 
