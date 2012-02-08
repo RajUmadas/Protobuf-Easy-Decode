@@ -21,7 +21,6 @@ class ProtobufEasyDecode:
 
     raw_message = ""
     decoded_message = {}
-
     def __init__(self,new_message):
         self.raw_message = new_message 
     
@@ -49,11 +48,10 @@ class ProtobufEasyDecode:
         new_pos = pos + length
         return buf[pos:new_pos],new_pos
 
-    def decode_raw_message(self):
+    def decode_raw_message(self,message):
         alls_good = True
         pos = 0
         temp_proto = {}
-        message = self.raw_message
         while alls_good:
             current_tag_header,pos=self.decode_varint(message,pos)
             current_tag_id, current_tag_type=self.decode_tag_header(current_tag_header)
@@ -68,8 +66,22 @@ class ProtobufEasyDecode:
             temp_proto[current_tag_id] = (current_tag_type,data)
             if pos == len(message):
                 alls_good = False
-        self.decoded_message = temp_proto
         return temp_proto
-                
+    
+    def get_decoded_raw_message (self):
+        if self.decoded_message == {}:
+            self.decoded_message = self.decode_raw_message(self.raw_message)
+            return self.decoded_message
+        else:
+            return self.decoded_message
+    def decode_tag(self, tag_id):
+        if self.decoded_message == {}:
+            return
+        if self.decoded_message[tag_id][0] == 2:
+            self.decoded_message[tag_id] = (2,self.decode_raw_message(self.decoded_message[tag_id][1]))
+        else:
+            return 
 x = ProtobufEasyDecode(binascii.unhexlify(sys.argv[1]))
-print x.decode_raw_message()
+x.get_decoded_raw_message()
+x.decode_tag(1)
+print x.get_decoded_raw_message()
