@@ -7,6 +7,9 @@
 #I should be able to just use the protobuf code base to 
 #accomplise this task.
 
+import sys
+import binascii
+
 class ProtobufEasyDecode:
     
     WIRETYPE_VARINT = 0
@@ -22,13 +25,10 @@ class ProtobufEasyDecode:
     def __init__(self,new_message):
         self.raw_message = new_message 
     
-    def get_raw_message (self):
-        return self.raw_message
-
     def decode_varint(self,buf,pos):
     #pass in buffer and starting position
     #return the int and the ending pos
-        result
+        result = 0
         shifts = 0
         while True:
             current_byte = ord(buf[pos])
@@ -42,14 +42,34 @@ class ProtobufEasyDecode:
         #returns tag_id, and tag_type
         return (tag_header >> 3, tag_header & 0x07)
 
-    def decode_lenghtdelim (self, buf, pos)
+    def decode_lengthdelim (self, buf, pos):
     #pass in buffer and start pos
     #return bytes and ending pos
         length,pos = self.decode_varint(buf,pos)
         new_pos = pos + length
         return buf[pos:new_pos],new_pos
 
-
-x = ProtobufEasyDecode("asdfasdfsadf")
-print x
-print x.get_raw_message()
+    def decode_raw_message(self):
+        alls_good = True
+        pos = 0
+        temp_proto = {}
+        message = self.raw_message
+        while alls_good:
+            current_tag_header,pos=self.decode_varint(message,pos)
+            current_tag_id, current_tag_type=self.decode_tag_header(current_tag_header)
+            if current_tag_type == self.WIRETYPE_LENGTHDELIM:
+                data,pos = self.decode_lengthdelim(message,pos)
+            elif current_tag_type == self.WIRETYPE_VARINT:
+                data,pos = self.decode_varint(message,pos)
+            else:
+                data = "error"
+                pos = len(message)
+                alls_good = False
+            temp_proto[current_tag_id] = (current_tag_type,data)
+            if pos == len(message):
+                alls_good = False
+        self.decoded_message = temp_proto
+        return temp_proto
+                
+x = ProtobufEasyDecode(binascii.unhexlify(sys.argv[1]))
+print x.decode_raw_message()
