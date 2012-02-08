@@ -11,7 +11,6 @@ TYPE_STARTGROUP = 3
 TYPE_ENDGROUP = 4
 TYPE_32 = 5
 
-
 def getVarintPos(stream):
     result = 0
     shifts = 0
@@ -48,15 +47,12 @@ def genDecodeProtoBuff(protoBin):
     allsGood = True
     theProtos =  {}
     while allsGood:
-        if len(protoBin) == 0:
-            return theProtos
         currentTagInt,pos = getVarintPos(protoBin)
         protoBin = protoBin[pos:]
         currentTag,currentType = getTagType(currentTagInt)
         if currentType == TYPE_LENGTHDELIM:
             data,pos = getLengthdelimPos(protoBin)
             protoBin = protoBin[pos:]
-            
             theProtos[currentTag]=(currentType,data,genDecodeProtoBuff(data))
         elif currentType == TYPE_VARINT:
             data,pos = getVarintPos(protoBin)
@@ -64,7 +60,14 @@ def genDecodeProtoBuff(protoBin):
             theProtos[currentTag]=(currentType,data,0)
         else:
             allsGood = False
+        if len(protoBin) == 0:
+            allsGood = False
     return theProtos
 
 protoBin = binascii.unhexlify(sys.argv[1])    
-print genDecodeProtoBuff(protoBin) 
+protoObj = genDecodeProtoBuff(protoBin) 
+
+for i in protoObj:
+    print "Tag: %i" % i
+    print "Object :" 
+    print  protoObj[i]
